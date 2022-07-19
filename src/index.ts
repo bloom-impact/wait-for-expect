@@ -2,7 +2,8 @@ import { getSetTimeoutFn } from "./helpers";
 
 const defaults = {
   timeout: 4500,
-  interval: 50
+  interval: 50,
+  onReject: async () => {},
 };
 
 /**
@@ -11,12 +12,14 @@ const defaults = {
  * @param  expectation  Function  Expectation that has to complete without throwing
  * @param  timeout  Number  Maximum wait interval, 4500ms by default
  * @param  interval  Number  Wait-between-retries interval, 50ms by default
+ * @param  onReject  Function Code to run if the promise is rejected
  * @return  Promise  Promise to return a callback result
  */
 const waitForExpect = function waitForExpect(
   expectation: () => void | Promise<void>,
   timeout = defaults.timeout,
-  interval = defaults.interval
+  interval = defaults.interval,
+  onReject = defaults.onReject,
 ) {
   const setTimeout = getSetTimeoutFn();
 
@@ -27,7 +30,9 @@ const waitForExpect = function waitForExpect(
   return new Promise((resolve, reject) => {
     const rejectOrRerun = (error: Error) => {
       if (tries > maxTries) {
-        reject(error);
+        onReject().finally(
+          () => reject(error)
+        )
         return;
       }
       // eslint-disable-next-line no-use-before-define
