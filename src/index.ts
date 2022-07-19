@@ -27,8 +27,8 @@ const waitForExpect = function waitForExpect(
   if (interval < 1) interval = 1;
   const maxTries = Math.ceil(timeout / interval);
   let tries = 0;
-  return new Promise((resolve, reject) => {
-    const rejectOrRerun = (error: Error) => {
+  return new Promise<void>((resolve, reject) => {
+    const rejectOrRerun = (error: unknown) => {
       if (tries > maxTries) {
         onReject().finally(
           () => reject(error)
@@ -44,7 +44,7 @@ const waitForExpect = function waitForExpect(
         Promise.resolve(expectation())
           .then(() => resolve())
           .catch(rejectOrRerun);
-      } catch (error) {
+      } catch (error: unknown) {
         rejectOrRerun(error);
       }
     }
